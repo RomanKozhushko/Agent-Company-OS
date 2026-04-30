@@ -873,3 +873,331 @@ Required sections:
 
 4. Case gallery grid
  - multiple before/after cards
+
+5. Case detail modal or page optional later
+ - problem
+ - solution
+ - result
+ - location
+ - service used
+ - approximate turnaround
+ - CTA
+
+6. Final CTA
+ - “Want a similar result?”
+ - “Build Your Quote”
+
+## 7. Triptych / 3-panel gallery
+
+We previously wanted a premium visual gallery style, not just boring cards.
+
+Add a TriptychGallery component concept.
+
+Purpose:
+Show 3 strong images side by side:
+
+- Detail
+- Process
+- Result
+
+or:
+
+- Before
+- During
+- After
+
+Requirements:
+
+- admin-controlled image slots;
+- title and caption for each image;
+- mobile stacks vertically or becomes swipe carousel;
+- no crash if image array is empty;
+- graceful fallback placeholders;
+- can be used on homepage and service pages.
+
+Important technical note:
+TriptychGallery must tolerate empty arrays and missing images. It must never crash the homepage.
+
+## 8. Service visual cards
+
+Every Flair Solution card must support image/media.
+
+Services requiring images:
+
+1. Driveway & Patio Revival
+2. Window & Frame Detail
+3. Anti-Mould Shield
+4. Odour Elimination
+5. Carpet Extraction
+6. Bathroom Face-Lift
+7. Kitchen Deep Reset
+8. Deposit Saver Touch-Ups
+9. Efflorescence & Brick Restoration
+10. Guardian Property Oversight
+
+Each service card fields:
+
+- title
+- slug
+- image
+- imageAlt
+- icon
+- problem
+- solution
+- result
+- startingPrice
+- visible
+- visibleForFlats
+- visibleForHouses
+- showOnHomepage
+- order
+- ctaLabel
+- ctaPreset
+
+Card design:
+
+- image thumbnail on top or background;
+- PSR copy below;
+- strong CTA;
+- premium spacing;
+- not generic stock-photo look.
+
+## 9. Reset Packages visual cards
+
+Reset Packages must be visual.
+
+Packages:
+
+1. 24h Express Reset
+2. 48h Pro Flair Reset
+3. 72h Ultimate Reset
+
+Each package must support:
+
+- main image;
+- imageAlt;
+- gallery images optional;
+- included item icons optional;
+- visual badge;
+- CTA mapping;
+- property category availability;
+- starting price;
+- PSR copy.
+
+Visual positioning:
+
+24h Express Reset:
+Fast, clean, urgent readiness.
+
+48h Pro Flair Reset:
+Signature reset, better presentation, stronger ROI.
+
+72h Ultimate Reset:
+Deepest visual recovery, premium photos, “new feel”.
+
+## 10. Admin media control
+
+Admin must be able to manage:
+
+- image URL/path;
+- before image;
+- after image;
+- mobile image;
+- alt text;
+- caption;
+- service type;
+- location;
+- category;
+- featured on/off;
+- visibility on/off;
+- order;
+- show on homepage on/off;
+- CTA preset;
+- CTA label.
+
+No image path should be hardcoded inside components if it belongs to public content.
+
+## 11. Media fallback behavior
+
+If images are missing:
+
+- do not crash;
+- do not show broken image icon;
+- show branded placeholder;
+- keep layout stable;
+- show admin warning only in admin later;
+- frontend should still look clean.
+
+Placeholder style:
+dark graphite card, subtle gradient, Care & Flair label, icon or simple visual pattern.
+
+## 12. CTA mapping from visual cards
+
+Every visual card must have CTA behavior from data layer.
+
+Examples:
+
+Before/After Bathroom case:
+CTA -> /quote?preset=bathroom-face-lift
+
+Driveway card:
+CTA -> /quote?preset=driveway-patio-revival
+
+24h Reset package:
+CTA -> /quote?preset=24h-express-reset
+
+48h Reset package:
+CTA -> /quote?preset=48h-pro-flair-reset
+
+72h Reset package:
+CTA -> /quote?preset=72h-ultimate-reset
+
+No fuzzy matching. Use exact slug.
+
+## 13. Visual proof hierarchy on homepage
+
+Homepage section priority should be:
+
+1. Hero with strong visual
+2. Trust badges
+3. Reset Packages with visuals
+4. Featured Before/After transformation
+5. Flair Solutions visual grid
+6. Before/After carousel
+7. Guardian teaser
+8. Areas served
+9. FAQ
+10. Final CTA
+
+Before/After should not be hidden too low. It is a major sales weapon.
+
+## 14. Mobile requirements
+
+Most clients may open from phone.
+
+Visual modules must:
+
+- work on mobile;
+- support swipe;
+- keep CTA visible;
+- avoid huge slow images;
+- avoid text overload;
+- keep before/after slider touch-friendly;
+- preserve scroll position when modals close.
+
+## 15. Performance requirements
+
+Images must be optimized.
+
+Requirements:
+
+- use Next Image where possible;
+- set width/height or aspect ratio;
+- lazy-load below-fold images;
+- priority only for hero image;
+- no layout shift;
+- avoid massive uncompressed files;
+- use alt text for SEO and accessibility.
+
+## 16. SEO value of images
+
+Image filenames and alt text should support local SEO.
+
+Examples:
+
+- bathroom-silicone-reset-bromley-before.jpg
+- bathroom-silicone-reset-bromley-after.jpg
+- driveway-cleaning-bromley-before.jpg
+- driveway-cleaning-bromley-after.jpg
+- mould-removal-rochester-before.jpg
+- mould-removal-rochester-after.jpg
+- carpet-cleaning-medway-before.jpg
+- carpet-cleaning-medway-after.jpg
+
+Alt text examples:
+
+- “Before bathroom silicone reset in Bromley rental property”
+- “After bathroom reseal and deep clean for Bromley landlord”
+- “Before driveway pressure washing in Bromley”
+- “After driveway cleaning with improved curb appeal”
+
+## 17. Data structure for before-after.json
+
+before-after.json should support:
+
+```json
+[
+  {
+    "id": "bathroom-reset-bromley-001",
+    "title": "Bathroom Face-Lift for Rental Readiness",
+    "slug": "bathroom-reset-bromley-001",
+    "category": "Bathroom",
+    "serviceType": "Bathroom Face-Lift",
+    "propertyType": "Flat",
+    "location": "Bromley",
+    "beforeImage": "/images/before-after/bathroom-reset-bromley-before-001.jpg",
+    "afterImage": "/images/before-after/bathroom-reset-bromley-after-001.jpg",
+    "beforeAlt": "Before bathroom silicone and limescale reset in Bromley rental property",
+    "afterAlt": "After bathroom reseal, descaling and presentation clean in Bromley rental property",
+    "problem": "Tired silicone, limescale and dull surfaces made the bathroom feel neglected.",
+    "solution": "Removed failed silicone, descaled wet areas and completed detail presentation clean.",
+    "result": "Cleaner bathroom with stronger viewing presentation.",
+    "featured": true,
+    "visible": true,
+    "showOnHomepage": true,
+    "order": 1,
+    "ctaLabel": "Get Quote for Similar Bathroom Reset",
+    "ctaPreset": "bathroom-face-lift"
+  }
+]
+```
+
+## 18. Components required for visual layer
+
+Create or plan these components:
+
+- BeforeAfterSlider
+- BeforeAfterCard
+- BeforeAfterCarousel
+- BeforeAfterGrid
+- FeaturedTransformation
+- TriptychGallery
+- MediaCard
+- VisualPlaceholder
+- VisualCTA
+- ImageWithFallback
+
+These should be reusable across homepage, services, before-after page and future admin preview.
+
+## 19. Admin later requirements
+
+When Admin MVP is built, it must allow Roman to:
+
+- upload or set before/after images;
+- edit titles and captions;
+- choose category;
+- choose location;
+- mark image pair as featured;
+- choose whether it appears on homepage;
+- reorder gallery items;
+- connect image pair to quote preset;
+- hide/show any visual block;
+- edit package images;
+- edit solution card images;
+- edit hero visual;
+- preview before publishing.
+
+## 20. Acceptance criteria for visual layer
+
+The visual layer is acceptable when:
+
+1. Homepage feels image-led, not text-heavy.
+2. Before/After slider works on desktop and mobile.
+3. Before/After carousel exists.
+4. /before-after page exists or is planned before production.
+5. Visual content comes from data layer.
+6. Missing images do not break layout.
+7. Service and package cards support images.
+8. CTA buttons connect to quote presets.
+9. Mobile experience is clean.
+10. Build passes.
