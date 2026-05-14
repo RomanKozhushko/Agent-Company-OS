@@ -1,1 +1,8 @@
 .openclaw/
+.DS_Store
+MEMORY.md
+memory/
+state/
+tmp_images/
+screen-tests/
+ocr_*.txt
