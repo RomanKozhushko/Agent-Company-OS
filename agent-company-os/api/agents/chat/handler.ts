@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { AgentChatRequest, AgentChatResponse } from '../../../lib/agents/chatTypes'
-import { generateAgentChatResponse } from '../../../lib/ai/aiProvider'
+import type { AgentChatRequest, AgentChatResponse } from '../../../lib/agents/chatTypes.js'
+import { generateAgentChatResponse } from '../../../lib/ai/aiProvider.js'
 
 type RequestWithBody = IncomingMessage & { body?: unknown }
 

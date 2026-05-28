@@ -1,4 +1,4 @@
-import type { AgentChatRequest, AgentChatResponse } from '../agents/chatTypes'
+import type { AgentChatRequest, AgentChatResponse } from '../agents/chatTypes.js'
 
 const roleHints: Record<string, string> = {
   boss: 'I will run the Product Lab pipeline, coordinate the agents and make the next Build / Improve / Kill decision.',

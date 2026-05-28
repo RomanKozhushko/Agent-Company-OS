@@ -1,6 +1,6 @@
-import type { AgentChatRequest, AgentChatResponse } from '../agents/chatTypes'
-import { generateOpenAIResponse, hasOpenAIKey } from './openaiProvider'
-import { createMockAgentResponse } from '../mock/mockAgentResponse'
+import type { AgentChatRequest, AgentChatResponse } from '../agents/chatTypes.js'
+import { generateOpenAIResponse, hasOpenAIKey } from './openaiProvider.js'
+import { createMockAgentResponse } from '../mock/mockAgentResponse.js'
 
 export async function generateAgentChatResponse(request: AgentChatRequest): Promise<AgentChatResponse> {
   // Provider order:

@@ -1,4 +1,4 @@
-import type { AgentChatRequest, AgentChatResponse, ConversationHistoryItem } from '../agents/chatTypes'
+import type { AgentChatRequest, AgentChatResponse, ConversationHistoryItem } from '../agents/chatTypes.js'
 
 interface OpenAIChatMessage {
   role: 'system' | 'user' | 'assistant'

@@ -128,7 +128,7 @@ async function generateProviderResponse(body: unknown): Promise<MockAgentRespons
   const request = normalizeAgentChatRequest(body)
 
   try {
-    const provider = await import('../../../lib/ai/aiProvider')
+    const provider = await import('../../../lib/ai/aiProvider.js')
     return await provider.generateAgentChatResponse(request)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown provider import/call error'
