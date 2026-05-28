@@ -1,6 +1,10 @@
 # Agent Company OS
 
-A polished first working prototype of a futuristic AI company command centre.
+A working prototype of an operating system for:
+
+**AI-R&D Lab → Premium B2B Products → B2B Sales Engine**
+
+The app researches trends, validates micro-niches, prototypes premium B2B digital products, runs 48h demand tests, prepares content/email assets and supports Build / Improve / Kill product decisions.
 
 ## Stack
 
@@ -11,32 +15,49 @@ A polished first working prototype of a futuristic AI company command centre.
 - Local Vite middleware API for chat
 - Local state and mock data only; ready for future backend/API integration
 
-## Features
+## Main sections
 
-- Premium dark glassmorphism SaaS dashboard
-- Agent structure map with clickable agent nodes
-- Agent registry cards with roles, missions, tools and status
-- Editable agent detail side panel
-- Add, duplicate and delete agents
-- Mock chat interface per selected agent with quick prompts
-- API-ready local chat endpoint at `POST /api/agents/chat`
-- Task assignment form and task board
-- Knowledge base items connected to agents
-- Settings placeholder for future configuration/API integration
-- Responsive desktop/tablet/mobile layout
+- Dashboard
+- Product Lab
+- Demand Tests
+- Content Engine
+- Email Funnel
+- Agents
+- Structure Map
+- Chat
+- Tasks
+- Knowledge Base
+- Settings
 
-## Run locally
+## Product Lab pipeline
 
-```bash
-npm install
-npm run dev
-```
+- Ideas
+- Niche Validation
+- Prototype
+- 48h Demand Test
+- Launch Ready
+- Killed / Archived
 
-## Production build
+## Lab agents
 
-```bash
-npm run build
-```
+- Lab Director Agent
+- Trend Scanner Agent
+- Micro-Niche Analyst Agent
+- Product Architect Agent
+- Prototype Builder Agent
+- Demand Test Agent
+- Content Engine Agent
+- Email Funnel Agent
+- Quality Control Agent
+
+## Example product candidates
+
+- Contractor Pricing & Quote Engine
+- Airbnb Turnover Operating System
+- Property Investor Toolkit
+- Small Business AI Operations Pack
+- Local Service Business Growth Kit
+- SOP Pack for Service Businesses
 
 ## Chat API architecture
 
@@ -46,34 +67,16 @@ Current flow:
 Agent Chat UI → POST /api/agents/chat → /api/agents/chat/handler.ts → /lib/ai/aiProvider.ts → /lib/mock/mockAgentResponse.ts
 ```
 
-Request body:
-
-```json
-{
-  "agentId": "boss",
-  "agentName": "Boss Agent",
-  "agentSystemPrompt": "...",
-  "userMessage": "Create a task plan",
-  "conversationHistory": []
-}
-```
-
-Response body:
-
-```json
-{
-  "assistantMessage": "...",
-  "agentId": "boss",
-  "timestamp": "2026-05-25T08:00:00.000Z",
-  "mock": true
-}
-```
-
 Future OpenAI, Claude or OpenClaw bridge integration should be added inside `lib/ai/aiProvider.ts`. Do not put provider secrets in frontend code.
 
-## Validation
+## Run locally
 
-Current prototype passes:
+```bash
+npm install
+npm run dev
+```
+
+## Validation
 
 ```bash
 npm run build

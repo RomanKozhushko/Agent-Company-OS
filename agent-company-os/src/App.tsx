@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import './App.css'
-import { initialAgents, initialKnowledge, initialTasks } from './mockData'
-import type { Agent, AgentStatus, ChatMessage, KnowledgeItem, Priority, Task, TaskStatus } from './types'
+import { initialAgents, initialKnowledge, initialProducts, initialTasks } from './mockData'
+import type { Agent, AgentStatus, ChatMessage, KnowledgeItem, Priority, ProductIdea, ProductStage, Task, TaskStatus } from './types'
 import type { AgentChatRequest, AgentChatResponse } from '../lib/agents/chatTypes'
 
-const navItems = ['Dashboard', 'Agents', 'Structure Map', 'Chat', 'Tasks', 'Knowledge Base', 'Settings'] as const
+const navItems = ['Dashboard', 'Product Lab', 'Demand Tests', 'Content Engine', 'Email Funnel', 'Agents', 'Structure Map', 'Chat', 'Tasks', 'Knowledge Base', 'Settings'] as const
 type View = (typeof navItems)[number]
 const statuses: AgentStatus[] = ['Active', 'Training', 'Draft', 'Paused']
 const priorities: Priority[] = ['Low', 'Medium', 'High']
 const taskStatuses: TaskStatus[] = ['New', 'In Progress', 'Waiting for Review', 'Completed']
+const characterImageByAgent: Record<string, string> = { boss: 'boss', trend: 'market', niche: 'crm', architect: 'offer', prototype: 'website', demand: 'sales', content: 'website', email: 'crm', qc: 'qc' }
+const productStages: ProductStage[] = ['Ideas', 'Niche Validation', 'Prototype', '48h Demand Test', 'Launch Ready', 'Killed / Archived']
 
 const uid = () => Math.random().toString(36).slice(2, 9)
 const emptyAgent = (): Agent => ({
@@ -31,6 +33,7 @@ const emptyAgent = (): Agent => ({
   notes: '',
   connectedAgents: ['boss'],
   prompt: '',
+  trainingProfile: 'Custom training profile for this lab operator.',
   agentId: `AG-${Math.floor(Math.random() * 900 + 100)}`,
   workload: 12,
   tasksAssigned: 0,
@@ -48,7 +51,7 @@ const emptyAgent = (): Agent => ({
   portraitGradient: 'custom',
 })
 
-function StatusBadge({ status }: { status: AgentStatus | TaskStatus | Priority }) {
+function StatusBadge({ status }: { status: string }) {
   const tone =
     status === 'Active' || status === 'Completed' ? 'emerald' :
     status === 'High' || status === 'Waiting for Review' ? 'rose' :
@@ -59,14 +62,14 @@ function StatusBadge({ status }: { status: AgentStatus | TaskStatus | Priority }
 function SidebarNavigation({ view, setView }: { view: View; setView: (view: View) => void }) {
   return (
     <aside className="sidebar">
-      <div className="brand-mark"><span>AC</span><div><b>Agent Company OS</b><small>AI Command Centre</small></div></div>
+      <div className="brand-mark"><span>RD</span><div><b>Agent Company OS</b><small>AI-R&D Lab</small></div></div>
       <nav className="nav-list">
         {navItems.map((item) => <button key={item} onClick={() => setView(item)} className={view === item ? 'active' : ''}>{item}</button>)}
       </nav>
       <div className="side-card">
         <span className="pulse" />
         <b>System online</b>
-        <p>Local prototype mode. API layer ready to connect later.</p>
+        <p>AI-R&D Lab mode. Product pipeline and mock API layer ready.</p>
       </div>
     </aside>
   )
@@ -76,21 +79,28 @@ function DashboardHeader({ onAdd }: { onAdd: () => void }) {
   return (
     <header className="dashboard-hero glass-panel">
       <div>
-        <p className="eyebrow">AI workforce control room</p>
+        <p className="eyebrow">AI-R&D Lab for Premium B2B Digital Products</p>
         <h1>Agent Company OS</h1>
-        <p className="subtitle">Build, manage and communicate with your AI workforce</p>
+        <p className="subtitle">Analyse trends, validate micro-niches, build premium prototypes and test demand</p>
       </div>
-      <button className="primary-btn" onClick={onAdd}>Add New Agent</button>
+      <button className="primary-btn" onClick={onAdd}>Add Lab Agent</button>
     </header>
   )
 }
 
-function SummaryCards({ agents, tasks }: { agents: Agent[]; tasks: Task[] }) {
+function SummaryCards({ products }: { agents: Agent[]; tasks: Task[]; products: ProductIdea[] }) {
+  const activeDemandTests = products.filter((product) => product.stage === '48h Demand Test').length
+  const launchReady = products.filter((product) => product.stage === 'Launch Ready').length
+  const killed = products.filter((product) => product.stage === 'Killed / Archived').length
+  const averageConfidence = Math.round(products.reduce((sum, product) => sum + product.confidenceScore, 0) / Math.max(products.length, 1))
+  const nextDecision = products.find((product) => product.stage === '48h Demand Test')?.decision ?? 'Improve'
   const cards = [
-    ['Total Agents', agents.length.toString(), '+2 planned'],
-    ['Active Agents', agents.filter((a) => a.status === 'Active').length.toString(), 'live operators'],
-    ['Tasks in Progress', tasks.filter((t) => ['New', 'In Progress', 'Waiting for Review'].includes(t.status)).length.toString(), 'open work'],
-    ['Leads / Projects / Outputs', '24', 'mock pipeline'],
+    ['Products in Lab', products.length.toString(), 'active candidates'],
+    ['Active Demand Tests', activeDemandTests.toString(), '48h validation'],
+    ['Launch Ready Products', launchReady.toString(), 'ready to sell'],
+    ['Killed Ideas', killed.toString(), 'archived fast'],
+    ['Average Confidence Score', `${averageConfidence}%`, 'portfolio signal'],
+    ['Next Product Decision', nextDecision, 'Build / Improve / Kill'],
   ]
   return <section className="summary-grid">{cards.map(([label, value, hint]) => <div className="metric-card glass-panel" key={label}><span>{label}</span><strong>{value}</strong><small>{hint}</small></div>)}</section>
 }
@@ -134,7 +144,7 @@ function AgentConnectionLines({ agents, selectedAgent }: { agents: Agent[]; sele
 function AgentPerson({ agent }: { agent: Agent }) {
   return <div className={`ai-character-frame character-${agent.portraitGradient}`} aria-label={`${agent.name} AI character`}>
     <span className="character-orbit" />
-    <img src={`/characters/${agent.id}.png`} alt={`${agent.name} AI character portrait`} onError={(event) => { event.currentTarget.style.display = 'none' }} />
+    <img src={`/characters/${characterImageByAgent[agent.id] ?? agent.id}.png`} alt={`${agent.name} AI character portrait`} onError={(event) => { event.currentTarget.style.display = 'none' }} />
     <div className="character-fallback"><span>{agent.avatar}</span></div>
   </div>
 }
@@ -196,7 +206,7 @@ function AgentStructureMap({ agents, selectedId, onSelect, onOpen, fullPage = fa
   if (!selectedAgent) return null
   return (
     <section className={`structure structure-command glass-panel ${fullPage ? 'structure-full-page' : ''}`}>
-      <div className="section-title"><div><p className="eyebrow">Structure Map</p><h2>AI Team Command Room</h2><span className="map-subtitle">Visual workers, live state and team relationships — details stay in the selected-agent panel</span></div><span>{visibleAgents.length}/{agents.length} agents visible</span></div>
+      <div className="section-title"><div><p className="eyebrow">Lab Structure Map</p><h2>AI-R&D Product Lab</h2><span className="map-subtitle">Trend research, micro-niche validation, prototype creation and launch testing — details stay in the selected-agent panel</span></div><span>{visibleAgents.length}/{agents.length} agents visible</span></div>
       <StructureMapFilters filter={filter} setFilter={setFilter} viewMode={viewMode} setViewMode={setViewMode} />
       <div className="structure-command-layout">
         <div className="structure-main-area">
@@ -252,6 +262,7 @@ function AgentDetailPanel({ agent, agents, onSave, onDuplicate, onDelete, onChat
         <label className="field"><span>Human Approval Required</span><select value={draft.humanApprovalRequired ? 'Yes' : 'No'} onChange={(e) => set('humanApprovalRequired', e.target.value === 'Yes')}><option>Yes</option><option>No</option></select></label>
         <Field label="Notes" value={draft.notes} onChange={(v) => set('notes', v)} textarea />
         <label className="field"><span>Connected Agents</span><select multiple value={draft.connectedAgents} onChange={(e) => set('connectedAgents', Array.from(e.target.selectedOptions).map((o) => o.value))}>{agents.filter((a) => a.id !== draft.id).map((a) => <option value={a.id} key={a.id}>{a.name}</option>)}</select></label>
+        <Field label="Training Profile" value={draft.trainingProfile} onChange={(v) => set('trainingProfile', v)} textarea />
         <Field label="Prompt / System Instructions" value={draft.prompt} onChange={(v) => set('prompt', v)} textarea />
       </div>
       <div className="panel-actions"><button className="primary-btn" onClick={() => onSave(draft)}>Save Changes</button><button onClick={() => onDuplicate(draft)}>Duplicate Agent</button><button onClick={() => onDelete(draft.id)}>Delete Agent</button><button onClick={() => onChat(draft.id)}>Start Chat</button><button onClick={() => onAssign(draft.id)}>Assign Task</button></div>
@@ -283,7 +294,7 @@ function AddAgentModal({ agents, onAdd, onClose }: { agents: Agent[]; onAdd: (ag
 function AgentChat({ agent, messages, onSend }: { agent: Agent; messages: ChatMessage[]; onSend: (text: string) => Promise<void> }) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
-  const quick = ['Create a task plan', 'Analyse this opportunity', 'Write an outreach message', 'Improve this offer', 'Check this for quality', 'Summarise next actions']
+  const quick = ['Analyse this product opportunity', 'Validate this micro-niche', 'Design product lab stage gates', 'Read demand-test metrics', 'Create content + email assets', 'Recommend Build / Improve / Kill']
   const send = async (value = text) => {
     if (!value.trim() || sending) return
     setSending(true)
@@ -301,17 +312,33 @@ function TaskBoard({ tasks, agents, onAddTask, onMove }: { tasks: Task[]; agents
 }
 
 function KnowledgeBase({ items, agents, onAdd }: { items: KnowledgeItem[]; agents: Agent[]; onAdd: (item: KnowledgeItem) => void }) {
-  const [draft, setDraft] = useState({ title: '', category: 'Business goals', description: '', connectedAgents: [agents[0]?.id ?? 'boss'] })
+  const [draft, setDraft] = useState({ title: '', category: 'Research & Validation', description: '', connectedAgents: [agents[0]?.id ?? 'boss'] })
   const submit = (e: FormEvent) => { e.preventDefault(); if (!draft.title.trim()) return; onAdd({ ...draft, id: `k-${uid()}`, lastUpdated: 'Just now' }); setDraft({ ...draft, title: '', description: '' }) }
   return <section className="knowledge-layout"><form className="glass-panel kb-form" onSubmit={submit}><h2>Knowledge Base</h2><Field label="Title" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })} /><Field label="Category" value={draft.category} onChange={(v) => setDraft({ ...draft, category: v })} /><Field label="Description" value={draft.description} onChange={(v) => setDraft({ ...draft, description: v })} textarea /><label className="field"><span>Connected agents</span><select multiple value={draft.connectedAgents} onChange={(e) => setDraft({ ...draft, connectedAgents: Array.from(e.target.selectedOptions).map((o) => o.value) })}>{agents.map((a) => <option value={a.id} key={a.id}>{a.name}</option>)}</select></label><button className="primary-btn">Store Knowledge</button></form><div className="knowledge-grid">{items.map((item) => <article className="knowledge-card glass-panel" key={item.id}><p className="eyebrow">{item.category}</p><h3>{item.title}</h3><p>{item.description}</p><small>{item.connectedAgents.map((id) => agents.find((a) => a.id === id)?.name).filter(Boolean).join(', ')} · {item.lastUpdated}</small></article>)}</div></section>
 }
 
-function SettingsPage() {
-  return <section className="settings-grid">{['Company name', 'Brand style', 'Default approval mode', 'Agent status options', 'Task priority options', 'API connection placeholder', 'Export / Import data placeholder'].map((label, index) => <label className="field glass-panel" key={label}><span>{label}</span><input defaultValue={index === 0 ? 'Agent Company OS' : index === 1 ? 'Premium dark SaaS / neon glass' : ''} placeholder="Configure later" /></label>)}</section>
+function ProductLab({ products, agents }: { products: ProductIdea[]; agents: Agent[] }) {
+  return <section className="product-lab-page"><div className="page-head"><div><p className="eyebrow">Product Lab</p><h1>Premium B2B Product Pipeline</h1><span>Ideas → validation → prototype → 48h demand test → launch decision</span></div></div><div className="product-pipeline">{productStages.map((stage) => <div className="product-stage glass-panel" key={stage}><h3>{stage}</h3>{products.filter((product) => product.stage === stage).map((product) => <article className="product-card" key={product.id}><div className="product-card-head"><b>{product.productName}</b><StatusBadge status={`${product.confidenceScore}%`} /></div><p>{product.productPromise}</p><small>{product.targetNiche}</small><div className="product-meta"><span>{product.productType}</span><span>{product.expectedPrice}</span><span>{product.decision}</span></div><em>{product.nextAction}</em><small>{product.assignedAgents.map((id) => agents.find((agent) => agent.id === id)?.name).filter(Boolean).join(', ')}</small></article>)}</div>)}</div></section>
 }
 
-function Dashboard({ agents, tasks, onAdd, onOpen }: { agents: Agent[]; tasks: Task[]; onAdd: () => void; onOpen: (id: string) => void }) {
-  return <><DashboardHeader onAdd={onAdd} /><SummaryCards agents={agents} tasks={tasks} /><div className="dashboard-command-room"><AgentStructureMap agents={agents} selectedId="boss" onSelect={onOpen} onOpen={onOpen} fullPage /></div><section className="activity-feed glass-panel dashboard-activity"><div className="section-title"><div><p className="eyebrow">Live feed</p><h2>Recent agent activity</h2></div></div>{agents.slice(0, 6).map((a) => <div className="activity-item" key={a.id}><span>{a.avatar}</span><div><b>{a.name}</b><p>{a.lastActivity}</p></div></div>)}</section></>
+function DemandTests({ products }: { products: ProductIdea[] }) {
+  return <section className="lab-table-page"><div className="page-head"><div><p className="eyebrow">Demand Tests</p><h1>48h Validation Metrics</h1></div></div><div className="agent-table-view glass-panel"><table><thead><tr><th>Product</th><th>Landing</th><th>Budget</th><th>Impressions</th><th>Clicks</th><th>CTR</th><th>CPC</th><th>Signups</th><th>Buy Now</th><th>Conv.</th><th>Decision</th></tr></thead><tbody>{products.map((product) => <tr key={product.id}><td><b>{product.productName}</b><small>{product.landingPageUrl || 'No URL yet'}</small></td><td>{product.landingPageStatus}</td><td>£{product.adBudget}</td><td>{product.impressions}</td><td>{product.clicks}</td><td>{product.ctr}%</td><td>£{product.cpc}</td><td>{product.emailSignups}</td><td>{product.buyNowClicks}</td><td>{product.conversionRate}%</td><td><StatusBadge status={product.decision} /></td></tr>)}</tbody></table></div></section>
+}
+
+function ContentEngine({ products }: { products: ProductIdea[] }) {
+  return <section className="knowledge-layout"><div className="glass-panel kb-form"><p className="eyebrow">Content Engine</p><h2>Angles, Hooks & Short-Video Ideas</h2><p className="mission">Content exists to test pain, product promise and market pull before overbuilding.</p></div><div className="knowledge-grid">{products.map((product) => <article className="knowledge-card glass-panel" key={product.id}><p className="eyebrow">{product.platform} · {product.contentStatus}</p><h3>{product.productName}</h3><p><b>Angles:</b> {product.contentAngles.join(' / ')}</p><p><b>Hooks:</b> {product.hooks.join(' ')}</p><p><b>Short videos:</b> {product.shortVideoIdeas.join(' / ')}</p><small>CTA: {product.CTA}</small></article>)}</div></section>
+}
+
+function EmailFunnel({ products }: { products: ProductIdea[] }) {
+  return <section className="knowledge-layout"><div className="glass-panel kb-form"><p className="eyebrow">Email Funnel</p><h2>B2B Sales Engine Assets</h2><p className="mission">Lead magnets, sequences and offer emails turn validation traffic into buyer intent.</p></div><div className="knowledge-grid">{products.map((product) => <article className="knowledge-card glass-panel" key={product.id}><p className="eyebrow">{product.funnelStatus}</p><h3>{product.productName}</h3><p><b>Lead magnet:</b> {product.leadMagnet}</p><p><b>Sequence:</b> {product.emailSequence.join(' → ')}</p><p><b>Offer email:</b> {product.offerEmail}</p><small>Bonus: {product.bonus} · Deadline: {product.deadline}</small></article>)}</div></section>
+}
+
+function SettingsPage() {
+  return <section className="settings-grid">{['Lab name', 'Positioning', 'Default approval mode', 'Agent status options', 'Task priority options', 'AI provider placeholder', 'Export / Import product pipeline'].map((label, index) => <label className="field glass-panel" key={label}><span>{label}</span><input defaultValue={index === 0 ? 'Agent Company OS' : index === 1 ? 'AI-R&D Lab for Premium B2B Digital Products' : ''} placeholder="Configure later" /></label>)}</section>
+}
+
+function Dashboard({ agents, tasks, products, onAdd, onOpen }: { agents: Agent[]; tasks: Task[]; products: ProductIdea[]; onAdd: () => void; onOpen: (id: string) => void }) {
+  return <><DashboardHeader onAdd={onAdd} /><SummaryCards agents={agents} tasks={tasks} products={products} /><div className="dashboard-command-room"><AgentStructureMap agents={agents} selectedId="boss" onSelect={onOpen} onOpen={onOpen} fullPage /></div><section className="activity-feed glass-panel dashboard-activity"><div className="section-title"><div><p className="eyebrow">Live feed</p><h2>Recent agent activity</h2></div></div>{agents.slice(0, 6).map((a) => <div className="activity-item" key={a.id}><span>{a.avatar}</span><div><b>{a.name}</b><p>{a.lastActivity}</p></div></div>)}</section></>
 }
 
 function App() {
@@ -319,10 +346,11 @@ function App() {
   const [agents, setAgents] = useState(initialAgents)
   const [tasks, setTasks] = useState(initialTasks)
   const [knowledge, setKnowledge] = useState(initialKnowledge)
+  const [products] = useState(initialProducts)
   const [selectedAgentId, setSelectedAgentId] = useState('boss')
   const [detailOpen, setDetailOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'm1', agentId: 'boss', sender: 'agent', text: 'Command layer online. Select an objective and I will route it to the right agents.', time: '07:15' }])
+  const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'm1', agentId: 'boss', sender: 'agent', text: 'AI-R&D Lab online. Give me a trend, niche or product idea and I will route it through research, validation, prototype, offer, launch and quality review.', time: '07:15' }])
   const selectedAgent = useMemo(() => agents.find((a) => a.id === selectedAgentId) ?? agents[0], [agents, selectedAgentId])
   const openAgent = (id: string) => { setSelectedAgentId(id); setDetailOpen(true) }
   const openChat = (id: string) => { setSelectedAgentId(id); setView('Chat'); setDetailOpen(false) }
@@ -367,8 +395,12 @@ function App() {
     }
   }
   const render = () => {
-    if (view === 'Dashboard') return <Dashboard agents={agents} tasks={tasks} onAdd={() => setAddOpen(true)} onOpen={openAgent} />
-    if (view === 'Agents') return <><div className="page-head"><div><p className="eyebrow">Agent registry</p><h1>AI workforce</h1></div><button className="primary-btn" onClick={() => setAddOpen(true)}>Add New Agent</button></div><AgentList agents={agents} onOpen={openAgent} onChat={openChat} /></>
+    if (view === 'Dashboard') return <Dashboard agents={agents} tasks={tasks} products={products} onAdd={() => setAddOpen(true)} onOpen={openAgent} />
+    if (view === 'Product Lab') return <ProductLab products={products} agents={agents} />
+    if (view === 'Demand Tests') return <DemandTests products={products} />
+    if (view === 'Content Engine') return <ContentEngine products={products} />
+    if (view === 'Email Funnel') return <EmailFunnel products={products} />
+    if (view === 'Agents') return <><div className="page-head"><div><p className="eyebrow">Agent registry</p><h1>AI-R&D Lab Team</h1></div><button className="primary-btn" onClick={() => setAddOpen(true)}>Add Lab Agent</button></div><AgentList agents={agents} onOpen={openAgent} onChat={openChat} /></>
     if (view === 'Structure Map') return <AgentStructureMap agents={agents} selectedId={selectedAgentId} onSelect={setSelectedAgentId} onOpen={openAgent} fullPage />
     if (view === 'Chat') return <AgentChat agent={selectedAgent} messages={messages.filter((m) => m.agentId === selectedAgent.id || m.agentId === 'boss')} onSend={sendMessage} />
     if (view === 'Tasks') return <TaskBoard tasks={tasks} agents={agents} onAddTask={(task) => setTasks((list) => [task, ...list])} onMove={(id, status) => setTasks((list) => list.map((t) => t.id === id ? { ...t, status } : t))} />

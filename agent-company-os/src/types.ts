@@ -1,6 +1,8 @@
 export type AgentStatus = 'Active' | 'Training' | 'Draft' | 'Paused'
 export type Priority = 'Low' | 'Medium' | 'High'
 export type TaskStatus = 'New' | 'In Progress' | 'Waiting for Review' | 'Completed'
+export type ProductStage = 'Ideas' | 'Niche Validation' | 'Prototype' | '48h Demand Test' | 'Launch Ready' | 'Killed / Archived'
+export type ProductDecision = 'Build' | 'Improve' | 'Kill'
 
 export interface Agent {
   id: string
@@ -21,6 +23,7 @@ export interface Agent {
   notes: string
   connectedAgents: string[]
   prompt: string
+  trainingProfile: string
   agentId: string
   workload: number
   tasksAssigned: number
@@ -59,6 +62,45 @@ export interface KnowledgeItem {
   description: string
   connectedAgents: string[]
   lastUpdated: string
+}
+
+export interface ProductIdea {
+  id: string
+  productName: string
+  targetNiche: string
+  customerPain: string
+  productPromise: string
+  productType: string
+  expectedPrice: string
+  confidenceScore: number
+  stage: ProductStage
+  assignedAgents: string[]
+  nextAction: string
+  validationNotes: string
+  createdAt: string
+  landingPageStatus: string
+  landingPageUrl: string
+  adBudget: number
+  impressions: number
+  clicks: number
+  ctr: number
+  cpc: number
+  emailSignups: number
+  buyNowClicks: number
+  conversionRate: number
+  decision: ProductDecision
+  contentAngles: string[]
+  hooks: string[]
+  shortVideoIdeas: string[]
+  platform: string
+  CTA: string
+  contentStatus: string
+  leadMagnet: string
+  emailSequence: string[]
+  offerEmail: string
+  bonus: string
+  deadline: string
+  funnelStatus: string
 }
 
 export interface ChatMessage {
